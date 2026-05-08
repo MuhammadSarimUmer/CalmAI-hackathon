@@ -145,8 +145,8 @@ export default function Dashboard() {
                     <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '11px' }}>#{i + 1}</span>
                   </div>
                   <div>
-                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>{task.description}</p>
-                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '2px' }}>Score: {task.priority_score} · {task.parent_task?.slice(0, 30)}...</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase' }}>{task.title}</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--on-surface-variant)', marginTop: '2px' }}>Score: {task.ai_priority_score} · {task.description?.slice(0, 30) || task.ai_parent_prompt?.slice(0, 30) || ''}...</p>
                   </div>
                 </li>
               ))}

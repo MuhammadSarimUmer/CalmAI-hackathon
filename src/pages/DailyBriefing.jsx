@@ -9,10 +9,12 @@ export default function DailyBriefing() {
   const { user } = useAuth()
   const [briefing, setBriefing] = useState(null)
   const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState(null)
   const today = new Date().toISOString().split('T')[0]
 
   const generateBriefing = async () => {
     setGenerating(true)
+    setError(null)
     try {
       const { data, error } = await supabase.functions.invoke('generate-briefing', {
         body: { userId: user.id }
@@ -23,6 +25,7 @@ export default function DailyBriefing() {
       setBriefing(data.content)
     } catch (e) {
       console.error('Briefing error:', e)
+      setError('Failed to generate briefing. Please try again.')
     } finally {
       setGenerating(false)
     }
@@ -30,10 +33,35 @@ export default function DailyBriefing() {
 
   useEffect(() => {
     if (!user) return
+    
+    // Reset state when component mounts
+    setBriefing(null)
+    setError(null)
+    
     const load = async () => {
-      const { data } = await supabase.from('daily_briefings').select('*').eq('user_id', user.id).eq('briefing_date', today).maybeSingle()
-      if (data) setBriefing(data.content)
-      else generateBriefing()
+      try {
+        const { data, error } = await supabase
+          .from('daily_briefings')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('briefing_date', today)
+          .maybeSingle()
+        
+        if (error) {
+          console.error('Error loading briefing:', error)
+          setError('Failed to load briefing.')
+          return
+        }
+        
+        if (data) {
+          setBriefing(data.content)
+        } else {
+          generateBriefing()
+        }
+      } catch (e) {
+        console.error('Failed to load briefing:', e)
+        setError('Failed to load briefing.')
+      }
     }
     load()
   }, [user?.id])
@@ -62,6 +90,14 @@ export default function DailyBriefing() {
           <div style={{ width: '60px', height: '60px', border: '4px solid var(--on-background)', borderTop: '4px solid var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '24px', textTransform: 'uppercase' }}>AI Is Generating Your Briefing...</h3>
           <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : error ? (
+        <div style={{ textAlign: 'center', padding: 'var(--space-xl)', border: '4px solid var(--error)', backgroundColor: 'var(--error-container)' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '64px', display: 'block', marginBottom: '16px', color: 'var(--error)' }}>error</span>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '24px', textTransform: 'uppercase', marginBottom: '12px', color: 'var(--error)' }}>{error}</h3>
+          <button className="brutalist-btn" onClick={generateBriefing} style={{ backgroundColor: 'var(--primary)', color: 'white', padding: 'var(--space-sm) var(--space-md)', fontSize: '14px' }}>
+            Try Again
+          </button>
         </div>
       ) : briefing ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px,1fr))', gap: 'var(--space-md)', alignItems: 'start' }}>
