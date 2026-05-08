@@ -66,10 +66,15 @@ export function AuthProvider({ children }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    window.location.href = '/login'
+    try {
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.warn("Error during Supabase sign out:", e)
+    } finally {
+      setUser(null)
+      setProfile(null)
+      window.location.href = '/login'
+    }
   }
 
   const refreshProfile = async () => {
