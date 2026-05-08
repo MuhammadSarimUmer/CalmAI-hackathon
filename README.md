@@ -8,6 +8,37 @@ Built for the modern knowledge worker who is drowning in tools, tabs, and unread
 
 ---
 
+## 🛠️ Technology Stack & Integrations
+
+<div align="center">
+
+### **Core Infrastructure**
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Deno](https://img.shields.io/badge/Deno_Edge_Functions-%23000000.svg?style=for-the-badge&logo=deno&logoColor=white)
+
+### **Artificial Intelligence Engine**
+![Groq](https://img.shields.io/badge/Groq_Inference_Engine-f55036?style=for-the-badge)
+![Meta Llama 3.1](https://img.shields.io/badge/Meta_Llama_3.1_8B-0466c8?style=for-the-badge&logo=meta&logoColor=white)
+
+### **External APIs & Data Sources**
+![Google OAuth](https://img.shields.io/badge/Google_Identity_Services-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Gmail API](https://img.shields.io/badge/Gmail_API-D14836?style=for-the-badge&logo=gmail&logoColor=white)
+![Google Calendar API](https://img.shields.io/badge/Google_Calendar_API-4285F4?style=for-the-badge&logo=google-calendar&logoColor=white)
+![Google Drive API](https://img.shields.io/badge/Google_Drive_API-1FA463?style=for-the-badge&logo=google-drive&logoColor=white)
+
+</div>
+
+### How It Connects:
+- **Frontend:** Built with React/Vite using a custom Neo-Brutalist design system (Space Grotesk & Space Mono fonts) to enforce focus and clarity.
+- **Backend Infrastructure:** Supabase provides the master PostgreSQL database, user authentication, and globally deployed Deno Edge Functions to handle the heavy API and AI orchestration.
+- **AI Brain:** We utilize Groq's blistering-fast inference API running Llama 3.1 to instantly parse JSON, extract context from external data, and generate cognitive warnings without user delay.
+- **API Matrix:** The application architecture is natively integrated with Google Identity Services to securely tap into Gmail (for task extraction), Google Calendar (for scheduling logic), and Google Drive.
+
+---
+
 ## ⚡ Core Features (The Engine)
 
 ### 🧠 1. AI Priority Engine
@@ -37,37 +68,6 @@ When it's time to execute, the noise disappears.
 - A distraction-free, full-screen focus environment.
 - Single-tasking enforcement: it only shows you your absolute #1 priority.
 - Built-in Pomodoro-style focus timers and ambient soundscapes.
-
----
-
-## 🛠️ Technology Stack & Integrations
-
-<div align="center">
-
-### **Core Infrastructure**
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-![Deno](https://img.shields.io/badge/Deno_Edge_Functions-%23000000.svg?style=for-the-badge&logo=deno&logoColor=white)
-
-### **Artificial Intelligence Engine**
-![Groq](https://img.shields.io/badge/Groq_Inference_Engine-f55036?style=for-the-badge)
-![Meta Llama 3.1](https://img.shields.io/badge/Meta_Llama_3.1_8B-0466c8?style=for-the-badge&logo=meta&logoColor=white)
-
-### **External APIs & Data Sources**
-![Google OAuth](https://img.shields.io/badge/Google_Identity_Services-%234285F4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)
-![Gmail API](https://img.shields.io/badge/Gmail_API-D14836?style=for-the-badge&logo=gmail&logoColor=white)
-![Google Calendar API](https://img.shields.io/badge/Google_Calendar_API-4285F4?style=for-the-badge&logo=google-calendar&logoColor=white)
-![Google Drive API](https://img.shields.io/badge/Google_Drive_API-1FA463?style=for-the-badge&logo=google-drive&logoColor=white)
-
-</div>
-
-### How It Connects:
-- **Frontend:** Built with React/Vite using a custom Neo-Brutalist design system (Space Grotesk & Space Mono fonts) to enforce focus and clarity.
-- **Backend Infrastructure:** Supabase provides the master PostgreSQL database, user authentication, and globally deployed Deno Edge Functions to handle the heavy API and AI orchestration.
-- **AI Brain:** We utilize Groq's blistering-fast inference API running Llama 3.1 to instantly parse JSON, extract context from external data, and generate cognitive warnings without user delay.
-- **API Matrix:** The application architecture is natively integrated with Google Identity Services to securely tap into Gmail (for task extraction), Google Calendar (for scheduling logic), and Google Drive.
 
 ---
 
