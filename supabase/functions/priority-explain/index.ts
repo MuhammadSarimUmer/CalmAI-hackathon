@@ -64,7 +64,7 @@ Extract any actionable tasks. Return ONLY a valid JSON array:
               method: 'POST',
               headers: { Authorization: `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                model: 'llama3-8b-8192',
+                model: 'llama-3.1-8b-instant',
                 messages: [{ role: 'user', content: parsePrompt }],
                 temperature: 0.2, max_tokens: 800
               })
