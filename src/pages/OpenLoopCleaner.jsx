@@ -45,6 +45,18 @@ export default function OpenLoopCleaner() {
     return () => supabase.removeChannel(channel)
   }, [user?.id])
 
+  // Re-fetch when user switches back to this tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && user) {
+        supabase.from('open_loops').select('*').eq('user_id', user.id).eq('status', 'open').order('created_at', { ascending: false })
+          .then(({ data }) => { if (data) setLoops(data) })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [user?.id])
+
   const captureLoop = async () => {
     if (!input.trim()) return
     const content = input.trim()

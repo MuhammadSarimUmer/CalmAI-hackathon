@@ -22,6 +22,15 @@ export default function PriorityEngine() {
 
   useEffect(() => { loadTasks() }, [user?.id])
 
+  // Re-fetch when user switches back to this tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && user) loadTasks()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [user?.id])
+
   const handleRerank = async () => {
     setExplaining(true)
     try {
