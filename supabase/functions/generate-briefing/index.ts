@@ -32,7 +32,7 @@ serve(async (req) => {
 
     // 2. Fetch open loop count
     const { count: loopCount } = await supabase.from('open_loops')
-      .select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_complete', false)
+      .select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'open')
 
     // 2.5 Fetch yesterday's analytics
     const yesterday = new Date()
@@ -79,8 +79,12 @@ serve(async (req) => {
     const prompt = `You are a calm productivity AI generating a morning briefing.
 User data:
 - Top tasks (by priority): ${JSON.stringify(tasks)}
+- Open mental loops: ${loopCount ?? 0}
 - Yesterday's performance: ${JSON.stringify(yesterdayStats ?? { tasks_completed: 0, focus_minutes: 0 })}
-- Today's calendar: ${JSON.stringify(calendarEvents)}
+- Today's Google Calendar events: ${JSON.stringify(calendarEvents)}
+
+IMPORTANT: The calendar events above are HARD commitments. Build the suggested_schedule AROUND them, filling the gaps with focused work blocks.
+If there are 3+ calendar events OR 8+ tasks, set cognitive_overload_warning.is_overloaded to true.
 
 Return ONLY this JSON structure, no extra text:
 {
@@ -89,7 +93,7 @@ Return ONLY this JSON structure, no extra text:
     { "time": "9:00 AM", "activity": "..." },
     { "time": "11:00 AM", "activity": "..." }
   ],
-  "cognitive_overload_warning": { "is_overloaded": boolean, "message": "gentle warning if too packed, else null" },
+  "cognitive_overload_warning": { "is_overloaded": false, "message": "gentle warning if too packed, else null" },
   "motivational_insight": "one sentence based on workload and yesterday's performance"
 }`
 
@@ -106,15 +110,21 @@ Return ONLY this JSON structure, no extra text:
         })
       })
       const json = await aiRes.json()
-      content = JSON.parse(json.choices[0].message.content)
+      const rawContent = json.choices[0].message.content.replace(/```json?/gi, '').replace(/```/g, '').trim()
+      content = JSON.parse(rawContent)
     } catch (e) {
       content = {
-        top_3_priorities: tasks?.map((t: any) => t.description).slice(0, 3) ?? [],
+        top_3_priorities: tasks?.map((t: any) => t.title || t.description).slice(0, 3) ?? [],
         suggested_schedule: calendarEvents.map((e: any) => ({ time: e.time, activity: e.name })),
         cognitive_overload_warning: { is_overloaded: false, message: null },
         motivational_insight: 'Focus on what matters most today.',
       }
     }
+
+    // Always inject raw calendar events and unread count into the saved content
+    // so the frontend can render them independently of AI output
+    content.calendar_events = calendarEvents
+    content.unread_emails = unreadEmailCount
 
     // 6. Save to daily_briefings
     await supabase.from('daily_briefings').upsert({

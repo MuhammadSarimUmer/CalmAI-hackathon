@@ -23,7 +23,6 @@ export default function PriorityEngine() {
   useEffect(() => { loadTasks() }, [user?.id])
 
   const handleRerank = async () => {
-    if (!tasks.length) return
     setExplaining(true)
     try {
       const { data, error } = await supabase.functions.invoke('priority-explain', {
@@ -31,9 +30,10 @@ export default function PriorityEngine() {
       })
       if (error) throw error
       setExplanation(data.explanation)
-      if (data.tasks) setTasks(data.tasks)
+      // Reload tasks from DB so newly extracted Gmail tasks appear
+      await loadTasks()
     } catch (e) {
-      setExplanation('AI explanation unavailable right now.')
+      setExplanation('AI explanation unavailable right now. Check that your Google account is connected.')
     } finally {
       setExplaining(false)
     }
@@ -55,12 +55,14 @@ export default function PriorityEngine() {
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(32px,6vw,64px)', textTransform: 'uppercase', letterSpacing: '-0.02em' }}>AI Priority Engine</h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', color: 'var(--on-surface-variant)', maxWidth: '480px', marginTop: '8px' }}>
-            {tasks.length > 0 ? `${tasks.length} tasks ranked by AI score formula: (urgency × 2) + difficulty - resistance` : 'No tasks yet. Decompose a task to get started.'}
+          {tasks.length > 0
+            ? `${tasks.length} tasks ranked by AI · Includes Gmail-extracted tasks`
+            : 'Click "Re-Prioritise with AI" to import from Gmail and rank all your tasks.'}
           </p>
         </div>
         <button className="brutalist-btn" onClick={handleRerank} disabled={explaining} style={{ backgroundColor: 'var(--secondary)', color: 'var(--secondary-fixed)', padding: 'var(--space-sm) var(--space-md)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: explaining ? 'not-allowed' : 'pointer' }}>
           <span className="material-symbols-outlined">{explaining ? 'hourglass_empty' : 'psychology'}</span>
-          {explaining ? 'FETCHING & ANALYZING...' : 'RE-PRIORITISE WITH AI'}
+          {explaining ? 'FETCHING GMAIL & ANALYZING...' : 'RE-PRIORITISE WITH AI'}
         </button>
       </section>
 
@@ -137,11 +139,12 @@ export default function PriorityEngine() {
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '20px', textTransform: 'uppercase', fontStyle: 'italic' }}>AI Reasoning Log</h3>
         </div>
         <div style={{ fontFamily: 'var(--font-body)', fontSize: '14px', lineHeight: '2', opacity: 0.9, borderLeft: '4px solid var(--primary)', paddingLeft: 'var(--space-sm)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p>{'>'} Priority formula: (urgency × 2) + difficulty - resistance</p>
-          <p>{'>'} {tasks.length} active tasks loaded from database</p>
-          <p>{'>'} Sorted by priority_score (highest → critical)</p>
+          <p>{'>'} Source 1: Micro-Task Decomposer (your manual breakdowns)</p>
+          <p>{'>'} Source 2: Gmail AI Extraction (unread emails scanned for deadlines &amp; keywords)</p>
+          <p>{'>'} {tasks.length} total tasks ranked by ai_priority_score (0–100)</p>
+          <p>{'>'} Higher score = more urgent based on deadline signals in email</p>
           <p style={{ color: 'var(--tertiary-fixed-dim)', fontWeight: 700, fontStyle: 'italic' }}>
-            {'>>'} Click "AI EXPLAIN" for natural language reasoning {'<<'}
+            {'>>'} Click "RE-PRIORITISE WITH AI" to pull latest Gmail &amp; re-rank {'<<'}
           </p>
         </div>
         <div style={{ marginTop: 'var(--space-md)', paddingTop: 'var(--space-sm)', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
