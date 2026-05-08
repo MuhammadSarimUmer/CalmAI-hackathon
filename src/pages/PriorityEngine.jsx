@@ -8,16 +8,28 @@ import { Link } from 'react-router-dom'
 export default function PriorityEngine() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [explanation, setExplanation] = useState('')
   const [explaining, setExplaining] = useState(false)
 
   const loadTasks = async () => {
     if (!user) return
     setLoading(true)
-    const { data } = await supabase.from('tasks').select('*').eq('user_id', user.id).eq('is_complete', false).order('ai_priority_score', { ascending: false })
-    setTasks(data ?? [])
-    setLoading(false)
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_complete', false)
+        .order('ai_priority_score', { ascending: false })
+      if (error) throw error
+      setTasks(data ?? [])
+    } catch (e) {
+      console.error('Failed to load tasks:', e.message)
+      setTasks([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { loadTasks() }, [user?.id])
