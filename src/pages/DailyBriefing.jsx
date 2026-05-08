@@ -9,20 +9,24 @@ export default function DailyBriefing() {
   const { user } = useAuth()
   const [briefing, setBriefing] = useState(null)
   const [generating, setGenerating] = useState(false)
+  const [error, setError] = useState(null)
   const today = new Date().toISOString().split('T')[0]
 
   const generateBriefing = async () => {
     setGenerating(true)
+    setError(null)
     try {
       const { data, error } = await supabase.functions.invoke('generate-briefing', {
         body: { userId: user.id }
       })
 
-      if (error) throw error
+      if (error) throw new Error(error.message || 'Edge function failed')
+      if (!data?.content) throw new Error('No content returned from AI')
 
       setBriefing(data.content)
     } catch (e) {
       console.error('Briefing error:', e)
+      setError(e.message || 'Something went wrong generating your briefing.')
     } finally {
       setGenerating(false)
     }
@@ -58,9 +62,10 @@ export default function DailyBriefing() {
       </section>
 
       {generating ? (
-        <div style={{ textAlign: 'center', padding: 'var(--space-xl)', border: '4px solid var(--on-background)', boxShadow: '8px 8px 0px 0px #000' }}>
+      <div style={{ textAlign: 'center', padding: 'var(--space-xl)', border: '4px solid var(--on-background)', boxShadow: '8px 8px 0px 0px #000' }}>
           <div style={{ width: '60px', height: '60px', border: '4px solid var(--on-background)', borderTop: '4px solid var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '24px', textTransform: 'uppercase' }}>AI Is Generating Your Briefing...</h3>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--on-surface-variant)', marginTop: '8px' }}>Fetching your Google Calendar &amp; tasks...</p>
           <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : briefing ? (
@@ -195,6 +200,15 @@ export default function DailyBriefing() {
               </button>
             </div>
           </div>
+        </div>
+      ) : error ? (
+        <div style={{ border: '4px solid var(--error)', backgroundColor: 'var(--error-container)', padding: 'var(--space-lg)', boxShadow: '8px 8px 0px 0px #000' }}>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '24px', textTransform: 'uppercase', color: 'var(--error)', marginBottom: '12px' }}>⚠ Briefing Failed</h3>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--on-error-container)', marginBottom: 'var(--space-md)' }}>{error}</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--on-error-container)', opacity: 0.8, marginBottom: 'var(--space-md)' }}>
+            Most likely cause: Google OAuth tokens are not stored in your profile, or the <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> secrets are not set in your Supabase Edge Function secrets dashboard.
+          </p>
+          <button className="brutalist-btn" onClick={generateBriefing} style={{ backgroundColor: 'var(--primary)', color: 'white', padding: 'var(--space-sm) var(--space-md)' }}>Try Again</button>
         </div>
       ) : null}
     </div>
