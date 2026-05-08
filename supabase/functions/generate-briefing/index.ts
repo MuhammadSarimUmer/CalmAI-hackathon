@@ -34,6 +34,12 @@ serve(async (req) => {
     const { count: loopCount } = await supabase.from('open_loops')
       .select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_complete', false)
 
+    // 2.5 Fetch yesterday's analytics
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    const { data: yesterdayStats } = await supabase.from('analytics').select('tasks_completed, focus_minutes').eq('user_id', userId).eq('week_start', yesterdayStr).single()
+
     // 3. Fetch today's calendar events
     let calendarEvents: any[] = []
     let unreadEmailCount = 0
@@ -73,21 +79,18 @@ serve(async (req) => {
     const prompt = `You are a calm productivity AI generating a morning briefing.
 User data:
 - Top tasks (by priority): ${JSON.stringify(tasks)}
-- Open mental loops: ${loopCount}
+- Yesterday's performance: ${JSON.stringify(yesterdayStats ?? { tasks_completed: 0, focus_minutes: 0 })}
 - Today's calendar: ${JSON.stringify(calendarEvents)}
-- Unread emails: ${unreadEmailCount}
 
 Return ONLY this JSON structure, no extra text:
 {
-  "priorities": ["top task 1", "top task 2", "top task 3"],
-  "schedule": [
+  "top_3_priorities": ["top task 1", "top task 2", "top task 3"],
+  "suggested_schedule": [
     { "time": "9:00 AM", "activity": "..." },
-    { "time": "11:00 AM", "activity": "..." },
-    { "time": "2:00 PM", "activity": "..." }
+    { "time": "11:00 AM", "activity": "..." }
   ],
-  "insight": "one motivational sentence based on their actual workload",
-  "warning": "if overloaded OR many unread emails, a gentle caution — else null",
-  "emailAlert": ${unreadEmailCount > 10 ? '"You have ' + unreadEmailCount + ' unread emails — consider a 10-minute inbox triage before starting deep work."' : 'null'}
+  "cognitive_overload_warning": { "is_overloaded": boolean, "message": "gentle warning if too packed, else null" },
+  "motivational_insight": "one sentence based on workload and yesterday's performance"
 }`
 
     // 5. Call Groq AI
@@ -106,11 +109,10 @@ Return ONLY this JSON structure, no extra text:
       content = JSON.parse(json.choices[0].message.content)
     } catch (e) {
       content = {
-        priorities: tasks?.map((t: any) => t.description).slice(0, 3) ?? [],
-        schedule: calendarEvents.map((e: any) => ({ time: e.time, activity: e.name })),
-        insight: 'Focus on what matters most today.',
-        warning: null,
-        emailAlert: null,
+        top_3_priorities: tasks?.map((t: any) => t.description).slice(0, 3) ?? [],
+        suggested_schedule: calendarEvents.map((e: any) => ({ time: e.time, activity: e.name })),
+        cognitive_overload_warning: { is_overloaded: false, message: null },
+        motivational_insight: 'Focus on what matters most today.',
       }
     }
 

@@ -27,10 +27,11 @@ export default function PriorityEngine() {
     setExplaining(true)
     try {
       const { data, error } = await supabase.functions.invoke('priority-explain', {
-        body: { userId: user.id, tasks: tasks.slice(0, 5) }
+        body: { userId: user.id }
       })
       if (error) throw error
       setExplanation(data.explanation)
+      if (data.tasks) setTasks(data.tasks)
     } catch (e) {
       setExplanation('AI explanation unavailable right now.')
     } finally {
@@ -57,9 +58,9 @@ export default function PriorityEngine() {
             {tasks.length > 0 ? `${tasks.length} tasks ranked by AI score formula: (urgency × 2) + difficulty - resistance` : 'No tasks yet. Decompose a task to get started.'}
           </p>
         </div>
-        <button className="brutalist-btn" onClick={handleRerank} disabled={explaining || !tasks.length} style={{ backgroundColor: 'var(--secondary)', color: 'var(--secondary-fixed)', padding: 'var(--space-sm) var(--space-md)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: tasks.length ? 'pointer' : 'not-allowed', opacity: tasks.length ? 1 : 0.5 }}>
+        <button className="brutalist-btn" onClick={handleRerank} disabled={explaining} style={{ backgroundColor: 'var(--secondary)', color: 'var(--secondary-fixed)', padding: 'var(--space-sm) var(--space-md)', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px', cursor: explaining ? 'not-allowed' : 'pointer' }}>
           <span className="material-symbols-outlined">{explaining ? 'hourglass_empty' : 'psychology'}</span>
-          {explaining ? 'ANALYZING...' : 'AI EXPLAIN'}
+          {explaining ? 'FETCHING & ANALYZING...' : 'RE-PRIORITISE WITH AI'}
         </button>
       </section>
 
@@ -85,7 +86,13 @@ export default function PriorityEngine() {
           {/* Priority #1 */}
           {tasks[0] && (
             <div style={{ gridColumn: '1 / -1' }}>
-              <div style={{ backgroundColor: '#FF4500', border: '8px solid black', boxShadow: '8px 8px 0px 0px #000', padding: 'var(--space-md)', position: 'relative', transform: 'rotate(-1deg)' }}>
+              <div style={{ backgroundColor: '#FF4500', border: '8px solid black', boxShadow: '8px 8px 0px 0px #000', padding: 'var(--space-md)', position: 'relative', transform: 'rotate(-1deg)', animation: 'glow 2s infinite alternate' }}>
+                <style>{`
+                  @keyframes glow {
+                    from { box-shadow: 8px 8px 0px 0px #000, 0 0 10px #FF4500, 0 0 20px #FF4500; }
+                    to { box-shadow: 8px 8px 0px 0px #000, 0 0 20px #FF4500, 0 0 30px #FF8C00; }
+                  }
+                `}</style>
                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', backgroundColor: '#FACC15', border: '4px solid black', padding: '4px 16px', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '18px', boxShadow: '4px 4px 0px 0px #000', zIndex: 10 }}>
                   #1 PRIORITY
                 </div>

@@ -67,10 +67,13 @@ export default function DailyBriefing() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px,1fr))', gap: 'var(--space-md)', alignItems: 'start' }}>
           {/* Main Briefing */}
           <div className="brutalist-card" style={{ gridColumn: 'span 2', backgroundColor: 'var(--surface-container-lowest)', padding: 'var(--space-md)' }}>
-            {briefing.warning && (
+            {briefing.cognitive_overload_warning?.is_overloaded && (
               <div style={{ backgroundColor: 'var(--error-container)', border: '3px solid var(--error)', padding: 'var(--space-sm)', marginBottom: 'var(--space-md)', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--error)' }}>warning</span>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--on-error-container)', fontWeight: 700 }}>{briefing.warning}</p>
+                <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: '28px' }}>warning</span>
+                <div>
+                  <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '16px', color: 'var(--error)', textTransform: 'uppercase', marginBottom: '2px' }}>Cognitive Overload Warning</h4>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--on-error-container)', fontWeight: 700 }}>{briefing.cognitive_overload_warning.message}</p>
+                </div>
               </div>
             )}
 
@@ -81,24 +84,15 @@ export default function DailyBriefing() {
 
             {/* AI Insight */}
             <div style={{ backgroundColor: 'var(--primary-container)', border: '3px solid var(--on-background)', padding: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', fontStyle: 'italic', lineHeight: 1.6 }}>"{briefing.insight}"</p>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', fontStyle: 'italic', lineHeight: 1.6 }}>"{briefing.motivational_insight}"</p>
             </div>
 
-            {/* Email Alert */}
-            {briefing.emailAlert && (
-              <div style={{ backgroundColor: 'white', border: '3px solid var(--on-background)', padding: 'var(--space-sm)', marginBottom: 'var(--space-md)', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '24px' }}>mail</span>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', flex: 1, fontWeight: 700 }}>{briefing.emailAlert}</p>
-                <button className="brutalist-btn" onClick={() => window.open('https://mail.google.com', '_blank')} style={{ backgroundColor: 'var(--primary)', color: 'white', padding: '4px 12px', fontSize: '12px' }}>
-                  Open Gmail
-                </button>
-              </div>
-            )}
+
 
             {/* Priorities */}
             <h4 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', marginBottom: 'var(--space-sm)' }}>Critical Priorities</h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>
-              {briefing.priorities?.map((p, i) => (
+              {briefing.top_3_priorities?.map((p, i) => (
                 <div key={i} className="brutalist-card" style={{ backgroundColor: 'white', padding: 'var(--space-sm)', transform: `translateY(${[0, 8, -4][i] || 0}px)` }}>
                   <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: '4px' }}>Priority #{i + 1}</p>
                   <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '14px' }}>{p}</p>
@@ -109,7 +103,7 @@ export default function DailyBriefing() {
             {/* Schedule */}
             <h4 style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '14px', textTransform: 'uppercase', marginBottom: 'var(--space-sm)', borderTop: '4px solid var(--on-background)', paddingTop: 'var(--space-sm)' }}>Smart Schedule</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {briefing.schedule?.map((s, i) => (
+              {briefing.suggested_schedule?.map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', borderLeft: `8px solid ${['var(--primary)', 'var(--secondary)', 'var(--tertiary)'][i % 3]}`, border: '4px solid var(--on-background)', borderLeftWidth: '8px', borderLeftColor: ['var(--primary)', 'var(--secondary)', 'var(--tertiary)'][i % 3], padding: 'var(--space-xs) var(--space-sm)', backgroundColor: i === 0 ? 'var(--surface-container)' : 'white' }}>
                   <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '14px', width: '80px', flexShrink: 0 }}>{s.time}</span>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px' }}>{s.activity}</span>
