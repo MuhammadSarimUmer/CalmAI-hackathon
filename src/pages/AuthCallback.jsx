@@ -1,49 +1,64 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
+  const [status, setStatus] = useState('Signing you in...')
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        navigate('/login')
-        return
-      }
-      // Extract Google tokens from Supabase session
-      const providerToken = session.provider_token
-      const providerRefreshToken = session.provider_refresh_token
+    // provider_refresh_token is ONLY available in the onAuthStateChange SIGNED_IN event.
+    // getSession() does NOT return it. This is a known Supabase limitation.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const providerToken = session.provider_token
+        const providerRefreshToken = session.provider_refresh_token
 
-      if (providerToken) {
-        console.log("Saving Google tokens to profiles table...");
-        const { error: upsertError } = await supabase.from('profiles').upsert({
-          id: session.user.id,
-          google_access_token: providerToken,
-          google_refresh_token: providerRefreshToken,
-          google_token_expiry: new Date(Date.now() + 3600 * 1000).toISOString(),
-        })
-        if (upsertError) {
-          console.error("Failed to save tokens:", upsertError);
-          alert("Database Error: Could not save your Google permissions. Tell your friend to check the profiles table columns!");
+        console.log('OAuth event:', event)
+        console.log('provider_token present:', !!providerToken)
+        console.log('provider_refresh_token present:', !!providerRefreshToken)
+
+        if (providerToken) {
+          setStatus('Saving Google permissions...')
+          const { error: upsertError } = await supabase.from('profiles').upsert({
+            id: session.user.id,
+            google_access_token: providerToken,
+            google_refresh_token: providerRefreshToken ?? null,
+            google_token_expiry: new Date(Date.now() + 3600 * 1000).toISOString(),
+          }, { onConflict: 'id' })
+
+          if (upsertError) {
+            console.error('Failed to save tokens:', upsertError)
+            setStatus('Warning: Could not save Google tokens. Features may be limited.')
+          } else {
+            console.log('Google tokens saved successfully!')
+          }
         } else {
-          console.log("Tokens saved successfully!");
+          console.warn('No provider_token in session — Google scopes may not have been granted.')
         }
-      }
 
-      // Check if profile/onboarding exists
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_complete')
-        .eq('id', session.user.id)
-        .single()
-
-      if (!profile || !profile.onboarding_complete) {
-        navigate('/dashboard') // send to dashboard, which shows onboarding prompts
-      } else {
+        setStatus('Redirecting...')
+        subscription.unsubscribe()
         navigate('/dashboard')
+      } else if (event === 'SIGNED_OUT') {
+        navigate('/login')
       }
     })
+
+    // Fallback: if onAuthStateChange never fires (e.g. page refresh mid-flow), 
+    // check existing session and redirect
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // No session yet — wait for onAuthStateChange
+        setTimeout(() => {
+          supabase.auth.getSession().then(({ data: { session: s } }) => {
+            if (!s) navigate('/login')
+          })
+        }, 3000)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [navigate])
 
   return (
@@ -65,7 +80,7 @@ export default function AuthCallback() {
         animation: 'spin 0.8s linear infinite',
       }} />
       <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '20px', textTransform: 'uppercase' }}>
-        Signing you in...
+        {status}
       </p>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
