@@ -39,7 +39,7 @@ Built for the modern knowledge worker who is drowning in tools, tabs, and unread
 
 ---
 
-## ⚡ Core Features (The Engine)
+## ⚡ Core Features (The Engine)(Only main ones are written)
 
 ### 🧠 1. AI Priority Engine
 Stop guessing what to work on next. The Priority Engine acts as your ruthless execution hub.
